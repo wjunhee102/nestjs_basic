@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Movie } from './entities/Movie.entity';
+import { CreateMovieDTO } from './dto/create-movie.dto';
+import { UpdateMovieDTO } from './dto/update-movie.dto';
 
 @Injectable()
 export class MoviesService {
@@ -8,4 +10,35 @@ export class MoviesService {
   getAll(): Movie[] {
     return this.movies;
   }
+
+  getOne(id: number):Movie {
+    const movie = this.movies.find(movie => movie.id === id);
+    if(!movie) {
+      throw new NotFoundException(`Movie with ID ${id} not found `)
+    }
+    return movie;
+  } 
+
+  /**
+   * movie 목록을 삭제하는 method입니다.
+   * @param id 
+   */
+  deleteOne(id: number) {
+    this.getOne(id);
+    this.movies =  this.movies.filter(movie => movie.id !== id);
+  }
+
+  create(movieData: CreateMovieDTO) {
+    this.movies.push({
+      id: this.movies.length + 1,
+      ...movieData
+    })
+  }
+
+  update(id:number, updateData: UpdateMovieDTO) {
+    const movie = this.getOne(id);
+    this.deleteOne(id);
+    this.movies.push({...movie, ...updateData});
+  }
+
 }
